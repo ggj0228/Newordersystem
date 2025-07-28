@@ -1,5 +1,7 @@
 package com.example.ordersystem.common.Auth;
 
+import com.example.ordersystem.common.service.JwtAuthenticationHandler;
+import com.example.ordersystem.common.service.JwtAuthorizationHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +24,8 @@ import java.util.Arrays;
 @EnableMethodSecurity
 public class SecurityConfig {
     private final JwtTokenFilter jwtTokenFilter;
+    private final JwtAuthorizationHandler jwtAuthorizationHandler;
+    private final JwtAuthenticationHandler jwtAuthenticationHandler;
 
     @Bean
     public SecurityFilterChain filterChain (HttpSecurity httpSecurity) throws Exception {
@@ -37,7 +41,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(jwtAuthorizationHandler)              // 403에러의 경우(NO! 권한)
 
                 )
-                .authorizeHttpRequests(a -> a.requestMatchers("/member/sign", "/member/doLogin").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a -> a.requestMatchers("/member/sign", "/member/login").permitAll().anyRequest().authenticated())
                 .build();
     }
 

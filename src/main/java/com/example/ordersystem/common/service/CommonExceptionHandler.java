@@ -22,4 +22,10 @@ public class CommonExceptionHandler {
         return new ResponseEntity<>(new CommonErrrorResponse(HttpStatus.BAD_REQUEST.value(), errorMessage), HttpStatus.BAD_REQUEST);
 
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> otherValueError(IllegalArgumentException e) {
+        return new ResponseEntity<>(new CommonErrrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
+
+    }
 }
