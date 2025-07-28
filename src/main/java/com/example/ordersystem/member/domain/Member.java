@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,5 +31,13 @@ public class Member extends BaseTime {
 
     private String delYn;
 
+    @Column(nullable = true)
+    private LocalDateTime deletedTime;
     // 생성일자도 있음
+
+    public void delete() {
+        this.delYn = "Y";
+        this.deletedTime = LocalDateTime.now();
+    }
+
 }

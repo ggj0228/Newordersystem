@@ -4,6 +4,7 @@ import com.example.ordersystem.common.Auth.JwtTokenProvider;
 import com.example.ordersystem.common.dto.response.CommonCorrectResponse;
 import com.example.ordersystem.member.domain.Member;
 import com.example.ordersystem.member.dto.MemberCreateDto;
+import com.example.ordersystem.member.dto.MemberDeleteDto;
 import com.example.ordersystem.member.dto.MemberLoginDto;
 import com.example.ordersystem.member.service.MemberService;
 import jakarta.validation.Valid;
@@ -44,5 +45,10 @@ public class MemberController {
                 .status_code(HttpStatus.OK.value())
                 .status_message("로그인 성공")
                 .build(), HttpStatus.OK);
+    }
+    @PostMapping("/delete")
+    public ResponseEntity<?> delete (@Valid @RequestBody MemberDeleteDto dto) {
+        this.memberService.delete(dto);
+        return new ResponseEntity<>("회원탈퇴 완료", HttpStatus.OK);
     }
 }
