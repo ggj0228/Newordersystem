@@ -48,7 +48,7 @@ public class MemberController {
                 .status_message("로그인 성공")
                 .build(), HttpStatus.OK);
     }
-    @PostMapping("/delete")
+    @DeleteMapping("/delete")
     public ResponseEntity<?> delete (@Valid @RequestBody MemberDeleteDto dto) {
         this.memberService.delete(dto);
         return new ResponseEntity<>("회원탈퇴 완료", HttpStatus.OK);
