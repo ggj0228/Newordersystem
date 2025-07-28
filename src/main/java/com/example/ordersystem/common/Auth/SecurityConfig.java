@@ -32,11 +32,11 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-//                .exceptionHandling(e
-//                        -> e.authenticationEntryPoint(jwtAuthenticationHandler)     // 401에러의 경우(토큰의 잘못)
-//                        .accessDeniedHandler(jwtAuthorizationHandler)              // 403에러의 경우(NO! 권한)
-//
-//                )
+                .exceptionHandling(e
+                        -> e.authenticationEntryPoint(jwtAuthenticationHandler)     // 401에러의 경우(토큰의 잘못)
+                        .accessDeniedHandler(jwtAuthorizationHandler)              // 403에러의 경우(NO! 권한)
+
+                )
                 .authorizeHttpRequests(a -> a.requestMatchers("/member/sign", "/member/doLogin").permitAll().anyRequest().authenticated())
                 .build();
     }
