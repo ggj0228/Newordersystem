@@ -57,7 +57,7 @@ public class MemberController {
     @GetMapping("/list")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> memberList(@PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC)Pageable pageable) {
-       Page<Member> members =  this.memberService.findall(pageable);
+       Page<MemberResDto> members =  this.memberService.findall(pageable);
        return new ResponseEntity<>(CommonCorrectResponse.builder()
                .response(members)
                .status_code(HttpStatus.OK.value())
@@ -67,6 +67,11 @@ public class MemberController {
 
     @GetMapping("/myinfo")
     public ResponseEntity<?> myinfo() {
-
+        MemberResDto memberResDto = this.memberService.myinfo();
+        return new ResponseEntity<>(CommonCorrectResponse.builder()
+                .response(memberResDto)
+                .status_code(HttpStatus.OK.value())
+                .status_message("내 정보")
+                .build(), HttpStatus.OK);
     }
 }

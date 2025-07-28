@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -63,12 +64,15 @@ public class MemberService {
         member.delete();
     }
 
-    public Page<Member> findall (Pageable pageable) {
+    public Page<MemberResDto> findall (Pageable pageable) {
         Page<Member> members = this.memeberRepository.findAll(pageable);
-        return members;
+        return members.map(MemberResDto::fromEntity);
     }
 
     public MemberResDto myinfo () {
-
+        Authentication auth = (Authentication) SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        Member member = this.memeberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+        return MemberResDto.fromEntity(member);
     }
 }
