@@ -21,10 +21,10 @@ public class MemberCreateDto {
     @NotEmpty(message = "이름을 입력해주세요")
     private String name;
 
-    public Member toEntity() {
+    public Member toEntity(String encodedPassword) {
         return Member.builder()
                 .name(this.name)
-                .password(this.password)
+                .password(encodedPassword)
                 .email(this.email)
                 .delYn("N")
                 .build();
