@@ -3,19 +3,18 @@ package com.example.ordersystem.member.controller;
 import com.example.ordersystem.common.Auth.JwtTokenProvider;
 import com.example.ordersystem.common.dto.response.CommonCorrectResponse;
 import com.example.ordersystem.member.domain.Member;
-import com.example.ordersystem.member.dto.MemberCreateDto;
-import com.example.ordersystem.member.dto.MemberDeleteDto;
-import com.example.ordersystem.member.dto.MemberLoginDto;
-import com.example.ordersystem.member.dto.MemberLoginResDto;
+import com.example.ordersystem.member.dto.*;
 import com.example.ordersystem.member.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,5 +52,21 @@ public class MemberController {
     public ResponseEntity<?> delete (@Valid @RequestBody MemberDeleteDto dto) {
         this.memberService.delete(dto);
         return new ResponseEntity<>("회원탈퇴 완료", HttpStatus.OK);
+    }
+
+    @GetMapping("/list")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> memberList(@PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC)Pageable pageable) {
+       Page<Member> members =  this.memberService.findall(pageable);
+       return new ResponseEntity<>(CommonCorrectResponse.builder()
+               .response(members)
+               .status_code(HttpStatus.OK.value())
+               .status_message("멤버 리스트")
+               .build(), HttpStatus.OK);
+    }
+
+    @GetMapping("/myinfo")
+    public ResponseEntity<?> myinfo() {
+
     }
 }
