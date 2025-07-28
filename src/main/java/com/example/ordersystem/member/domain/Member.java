@@ -27,7 +27,8 @@ public class Member extends BaseTime {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    @Builder.Default
+    private Role role = Role.USER;
 
     private String delYn;
 

@@ -6,6 +6,7 @@ import com.example.ordersystem.member.domain.Member;
 import com.example.ordersystem.member.dto.MemberCreateDto;
 import com.example.ordersystem.member.dto.MemberDeleteDto;
 import com.example.ordersystem.member.dto.MemberLoginDto;
+import com.example.ordersystem.member.dto.MemberLoginResDto;
 import com.example.ordersystem.member.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +39,12 @@ public class MemberController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody MemberLoginDto dto) {
         Member member = this.memberService.login(dto);
-        String token = jwtTokenProvider.crateAt(member);
-
+        String accesstoken = jwtTokenProvider.crateAt(member);
+        MemberLoginResDto memberLoginResDto = MemberLoginResDto.builder()
+                .accessToken(accesstoken)
+                .build();
         return new ResponseEntity<>(CommonCorrectResponse.builder()
-                .response(token)
+                .response(memberLoginResDto)
                 .status_code(HttpStatus.OK.value())
                 .status_message("로그인 성공")
                 .build(), HttpStatus.OK);

@@ -1,6 +1,7 @@
 package com.example.ordersystem.member.dto;
 
 import com.example.ordersystem.member.domain.Member;
+import com.example.ordersystem.member.domain.Role;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,7 @@ public class MemberCreateDto {
                 .password(encodedPassword)
                 .email(this.email)
                 .delYn("N")
+                .role(Role.USER)
                 .build();
     }
 }
