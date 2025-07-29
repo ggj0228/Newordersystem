@@ -29,4 +29,8 @@ public class Product extends BaseTime {
     @JoinColumn(name = "member_id")
     Member member;
 
+    public void updateImageUrl(String profileImageUrl) {
+        this.imagePath = profileImageUrl;
+    }
+
 }

@@ -9,8 +9,13 @@ import com.example.ordersystem.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.util.List;
 
@@ -20,12 +25,38 @@ import java.util.List;
 public class ProductService {
     private final ProductRepository productRepository;
     private final MemeberRepository memberRepository;
+    private final S3Client s3Client;
 
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
-    public Long createProduct(ProductCreateDto dto) {
+    public Long createProduct(ProductCreateDto dto, MultipartFile productImage) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
         Product product = productRepository.save(dto.toEntity(member));
+        String fileName = "member-"+product.getId()+ "-productfileImage"+productImage.getOriginalFilename();
+        // 저장 객체 구성
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(fileName)
+                .contentType(productImage.getContentType()) // imag, jpeg, video/mp4
+                .build();
+
+        // 이미지를 업로드(byte형태로)
+        // checked에러 나오는데 service 계층에서 롤백되야하니 try catch해야함
+        try {
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes((productImage.getBytes())));
+        } catch (Exception e) {
+            // checked를 unchecked로 바꿔서  전체 내용이 rollback되도록 예외처리
+            e.getMessage();
+            e.printStackTrace();
+            throw new IllegalArgumentException("이미지 업로드 실패");
+
+        }
+
+        // 이미지 url 추출
+        String imgUrl = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
+        product.updateImageUrl(imgUrl);
         return product.getId();
     }
 
