@@ -3,15 +3,15 @@ package com.example.ordersystem.product.controller;
 import com.example.ordersystem.common.dto.response.CommonCorrectResponse;
 import com.example.ordersystem.product.dto.ProductCreateDto;
 import com.example.ordersystem.product.dto.ProductResDto;
+import com.example.ordersystem.product.dto.ProductSearchDto;
 import com.example.ordersystem.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/product")
@@ -24,8 +24,8 @@ public class ProductController {
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createProduct(@ModelAttribute ProductCreateDto dto,
-                                           @RequestParam(name ="imagePath") MultipartFile image) {
-        Long id = this.productService.createProduct(dto, image);
+                                           @RequestParam(name ="productImage") MultipartFile productImage) {
+        Long id = this.productService.createProduct(dto, productImage);
         return new ResponseEntity<>(CommonCorrectResponse.builder()
                 .response(id)
                 .status_code(HttpStatus.CREATED.value())
@@ -34,10 +34,10 @@ public class ProductController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<?> findAll() {
-        List<ProductResDto> dto = this.productService.findAll();
+    public ResponseEntity<?> findAll(Pageable pageable, ProductSearchDto dto) {
+
         return new ResponseEntity<> (CommonCorrectResponse.builder()
-                .response(dto)
+                .response(this.productService.findAll(pageable, dto))
                 .status_code(HttpStatus.OK.value())
                 .status_message("상품 리스트")
                 .build(), HttpStatus.OK);

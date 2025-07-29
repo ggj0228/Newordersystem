@@ -5,11 +5,19 @@ import com.example.ordersystem.member.repository.MemeberRepository;
 import com.example.ordersystem.product.domain.Product;
 import com.example.ordersystem.product.dto.ProductCreateDto;
 import com.example.ordersystem.product.dto.ProductResDto;
+import com.example.ordersystem.product.dto.ProductSearchDto;
 import com.example.ordersystem.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +25,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -60,8 +69,25 @@ public class ProductService {
         return product.getId();
     }
 
-    public List<ProductResDto> findAll() {
-        return productRepository.findAll().stream().map(a -> ProductResDto.fromEntity(a)).toList();
+    public Page<ProductResDto> findAll(Pageable pageable, ProductSearchDto dto) {
+        Specification<Product> specification = new Specification<Product>() {
+            @Override
+            public Predicate toPredicate(Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                // Root : 엔티티의 속성을 접근하기 위한 객체
+                // criteriaBuilder : 쿼리를 생성하기 위한 객체
+                List<Predicate> predicates = new ArrayList<>();
+                if (dto.getCategory() != null)
+                    predicates.add(criteriaBuilder.equal(root.get("category"), dto.getCategory()));
+
+                if (dto.getProductName() != null)
+                    predicates.add(criteriaBuilder.like(root.get("name"), "%" + dto.getProductName() + "%"));
+
+                Predicate[] predicateArr = predicates.toArray(Predicate[]::new);
+                return criteriaBuilder.and(predicateArr);
+            }
+        };
+        Page<Product> products = this.productRepository.findAll(specification, pageable);
+        return products.map(ProductResDto::fromEntity);
     }
 
     public ProductResDto findById(Long id) {
