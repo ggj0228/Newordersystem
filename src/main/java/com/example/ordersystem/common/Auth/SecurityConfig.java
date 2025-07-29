@@ -41,7 +41,11 @@ public class SecurityConfig {
                         .accessDeniedHandler(jwtAuthorizationHandler)              // 403에러의 경우(NO! 권한)
 
                 )
-                .authorizeHttpRequests(a -> a.requestMatchers("/member/sign", "/member/login", "member/refresh-at").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a -> a.requestMatchers(
+                        "/member/sign", "/member/login", "member/refresh-at",
+                        "/product/list", "product/detail/{id}"
+
+                ).permitAll().anyRequest().authenticated())
                 .build();
     }
 
