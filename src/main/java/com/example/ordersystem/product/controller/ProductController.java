@@ -1,5 +1,6 @@
 package com.example.ordersystem.product.controller;
 
+import com.example.ordersystem.common.dto.response.CommonCorrectResponse;
 import com.example.ordersystem.product.dto.ProductCreateDto;
 import com.example.ordersystem.product.service.ProductService;
 import jakarta.validation.Valid;
@@ -24,6 +25,10 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createProduct(@Valid @RequestBody ProductCreateDto dto) {
         this.productService.createProduct(dto);
-        return new ResponseEntity<>("생성완료", HttpStatus.OK);
+        return new ResponseEntity<>(CommonCorrectResponse.builder()
+                .response(dto)
+                .status_code(HttpStatus.CREATED.value())
+                .status_message("생성 완료")
+                .build(), HttpStatus.CREATED);
     }
 }
