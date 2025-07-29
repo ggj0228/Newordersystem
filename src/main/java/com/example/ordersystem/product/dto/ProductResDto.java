@@ -10,14 +10,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class ProductListDto {
+public class ProductResDto {
+    private Long id;
     private String name;
     private String category;
     private int price;
     private int stockQuantity;
 
-    public static ProductListDto fromEntity(Product product) {
-        return ProductListDto.builder()
+    public static ProductResDto fromEntity(Product product) {
+        return ProductResDto.builder()
+                .id(product.getId())
                 .name(product.getName())
                 .category(product.getCategory())
                 .price(product.getPrice())

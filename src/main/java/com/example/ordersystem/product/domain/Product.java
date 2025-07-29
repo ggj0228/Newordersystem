@@ -23,7 +23,7 @@ public class Product extends BaseTime {
     private String category;
     private int price;
     private int stockQuantity;
-//    private String ImageUrl;
+    private String imagePath;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")

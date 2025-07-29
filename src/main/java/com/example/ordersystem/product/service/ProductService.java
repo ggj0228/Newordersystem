@@ -4,8 +4,7 @@ import com.example.ordersystem.member.domain.Member;
 import com.example.ordersystem.member.repository.MemeberRepository;
 import com.example.ordersystem.product.domain.Product;
 import com.example.ordersystem.product.dto.ProductCreateDto;
-import com.example.ordersystem.product.dto.ProductDetailDto;
-import com.example.ordersystem.product.dto.ProductListDto;
+import com.example.ordersystem.product.dto.ProductResDto;
 import com.example.ordersystem.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -23,18 +22,19 @@ public class ProductService {
     private final MemeberRepository memberRepository;
 
 
-    public void createProduct(ProductCreateDto dto) {
+    public Long createProduct(ProductCreateDto dto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Member member = this.memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
-        productRepository.save(dto.toEntity(member));
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+        Product product = productRepository.save(dto.toEntity(member));
+        return product.getId();
     }
 
-    public List<ProductListDto> findAll() {
-        return productRepository.findAll().stream().map(a -> ProductListDto.fromEntity(a)).toList();
+    public List<ProductResDto> findAll() {
+        return productRepository.findAll().stream().map(a -> ProductResDto.fromEntity(a)).toList();
     }
 
-    public ProductDetailDto findById(Long id) {
+    public ProductResDto findById(Long id) {
         Product product = productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("상품이 없습니다."));
-        return ProductDetailDto.fromEntity(product);
+        return ProductResDto.fromEntity(product);
     }
 }
