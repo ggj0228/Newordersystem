@@ -38,9 +38,14 @@ public class MemberController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody MemberLoginDto dto) {
         Member member = this.memberService.login(dto);
-        String accesstoken = jwtTokenProvider.crateAt(member);
+        // at 토큰 생성
+        String accessToken = jwtTokenProvider.createAtToken(member);
+        // rt토큰 생성
+        String refreshToken = jwtTokenProvider.createhRtToken(member);
+
         MemberLoginResDto memberLoginResDto = MemberLoginResDto.builder()
-                .accessToken(accesstoken)
+                .accessToken(accessToken)
+                .RefreshToken(refreshToken)
                 .build();
         return new ResponseEntity<>(CommonCorrectResponse.builder()
                 .response(memberLoginResDto)
@@ -52,6 +57,25 @@ public class MemberController {
     public ResponseEntity<?> delete (@Valid @RequestBody MemberDeleteDto dto) {
         this.memberService.delete(dto);
         return new ResponseEntity<>("회원탈퇴 완료", HttpStatus.OK);
+    }
+
+
+    // rt를 통한 at 갱신 요청
+    @PostMapping("/refresh-at")
+    public ResponseEntity<?> generateNewAt(@RequestBody RefreshTokenDto dto) {
+        // rt검증 로직
+        Member member = jwtTokenProvider.validateRefreshToken(dto.getRefreshToken());
+        // at신규 생성
+        String newAccessToken = jwtTokenProvider.createAtToken(member);
+        MemberLoginResDto memberLoginResDto = MemberLoginResDto.builder()
+                .accessToken(newAccessToken)
+                .RefreshToken(dto.getRefreshToken())
+                .build();
+        return new ResponseEntity<>(CommonCorrectResponse.builder()
+                .response(memberLoginResDto)
+                .status_code(HttpStatus.OK.value())
+                .status_message("로그인 성공")
+                .build(), HttpStatus.OK);
     }
 
     @GetMapping("/list")
