@@ -8,8 +8,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -17,10 +17,17 @@ import java.security.Key;
 import java.util.Date;
 
 @Component
-@RequiredArgsConstructor
 public class JwtTokenProvider {
-
     private final MemeberRepository memberRepository;
+    private final RedisTemplate<String, String> redisTemplate;
+
+
+    // Qualifier는 기본적으로 매서드를 통한 주입 가능, 그래서 이 경우 생성자 주입방식을 해야 Qualifier를 사용 가능
+    public JwtTokenProvider(MemeberRepository memberRepository, RedisTemplate<String, String> redisTemplate) {
+        this.memberRepository = memberRepository;
+        this.redisTemplate = redisTemplate;
+    }
+
     @Value("${jwt.expirationAt}")
     private int expirationAt;
 
@@ -49,14 +56,14 @@ public class JwtTokenProvider {
         Claims claims = Jwts.claims().setSubject(email);
         claims.put("role", role);
         Date now = new Date();
-        String token  = Jwts.builder()
+        String accessToken = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + expirationAt*60*1000L)) // 지금 현재 expirationAt분으로 세팅 (밀리초 단위임)
                 // secret키를 통해 signiture 생성
                 .signWith(secretKeyAtToken)
                 .compact();
-        return token;
+        return accessToken;
     }
     public String createhRtToken(Member member) {
         // 유효기간이 긴 rt 토큰 생성
@@ -65,35 +72,40 @@ public class JwtTokenProvider {
         Claims claims = Jwts.claims().setSubject(email);
         claims.put("role", role);
         Date now = new Date();
-        String token  = Jwts.builder()
+        String refreshToken = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + expirationRt*60*1000L)) // 지금 현재 expirationAt분으로 세팅 (밀리초 단위임)
                 // secret키를 통해 signiture 생성
                 .signWith(secretKeyRtToken)
                 .compact();
-        return token;
 
 
         // rt 토큰을 redis에 저장
+        redisTemplate.opsForValue().set(member.getEmail(), refreshToken);
+//        redisTemplate.opsForValue().set(member.getEmail(), refreshToken, 200, Time.Unit.DAYS); // 200일 ttl, 토큰 검증애서 걸림
+        return refreshToken;
 
 
 
 
     }
 
-    public Member validateRefreshToken(String rtToken) {
+    public Member validateRefreshToken(String refreshToken) {
         //rt 토큰 검증
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKeyRtToken)
                 .build()
-                .parseClaimsJws(rtToken)
+                .parseClaimsJws(refreshToken)
                 .getBody();
         String email = claims.getSubject();
         Member member = this.memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
 
         //redis의 값과 비교하는 검증
-
+        String redisRt = redisTemplate.opsForValue().get(member.getEmail());
+        if(!refreshToken.equals(redisRt)){
+            throw new IllegalArgumentException("rt 토큰가 일치하지 않습니다.");
+        }
         return member;
 
     }

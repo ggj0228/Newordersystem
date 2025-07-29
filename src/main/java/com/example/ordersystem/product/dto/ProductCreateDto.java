@@ -1,0 +1,25 @@
+package com.example.ordersystem.product.dto;
+
+import com.example.ordersystem.product.domain.Product;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@lombok.Data
+
+public class ProductCreateDto {
+    private String name;
+    private String category;
+    private int price;
+    private int stockQuantity;
+
+    public Product toEntity() {
+        return Product.builder()
+                .name(name)
+                .category(category)
+                .price(price)
+                .stockQuantity(stockQuantity)
+                .build();
+    }
+}

@@ -69,12 +69,11 @@ public class MemberController {
         String newAccessToken = jwtTokenProvider.createAtToken(member);
         MemberLoginResDto memberLoginResDto = MemberLoginResDto.builder()
                 .accessToken(newAccessToken)
-                .RefreshToken(dto.getRefreshToken())
                 .build();
         return new ResponseEntity<>(CommonCorrectResponse.builder()
                 .response(memberLoginResDto)
                 .status_code(HttpStatus.OK.value())
-                .status_message("로그인 성공")
+                .status_message("at 재발급 완료")
                 .build(), HttpStatus.OK);
     }
 
