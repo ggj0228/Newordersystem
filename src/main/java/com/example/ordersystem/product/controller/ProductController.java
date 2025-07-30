@@ -4,6 +4,7 @@ import com.example.ordersystem.common.dto.response.CommonCorrectResponse;
 import com.example.ordersystem.product.dto.ProductCreateDto;
 import com.example.ordersystem.product.dto.ProductResDto;
 import com.example.ordersystem.product.dto.ProductSearchDto;
+import com.example.ordersystem.product.dto.ProductUpdateDto;
 import com.example.ordersystem.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,18 @@ public class ProductController {
                 .status_code(HttpStatus.CREATED.value())
                 .status_message("상품 등록 완료")
                 .build(), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateProduct(@PathVariable Long id,
+                                           @ModelAttribute ProductUpdateDto dto) {
+        Long productId =  this.productService.updateProduct(id, dto);
+        return new ResponseEntity<>(CommonCorrectResponse.builder()
+                .response(productId)
+                .status_code(HttpStatus.OK.value())
+                .status_message("상품 수정 완료")
+                .build(), HttpStatus.OK);
     }
 
     @GetMapping("/list")
