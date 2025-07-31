@@ -1,5 +1,6 @@
 package com.example.ordersystem.product.service;
 
+import com.example.ordersystem.common.service.StockInventoryService;
 import com.example.ordersystem.member.domain.Member;
 import com.example.ordersystem.member.repository.MemeberRepository;
 import com.example.ordersystem.product.domain.Product;
@@ -36,6 +37,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final MemeberRepository memberRepository;
     private final S3Client s3Client;
+    private final StockInventoryService stockInventoryService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -69,6 +71,9 @@ public class ProductService {
         // 이미지 url 추출
         String imgUrl = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
         product.updateImageUrl(imgUrl);
+
+        // 상품등록시 redis에 재고세팅
+        stockInventoryService.makeStockQuntity(product.getId(),product.getStockQuantity());
         return product.getId();
     }
 

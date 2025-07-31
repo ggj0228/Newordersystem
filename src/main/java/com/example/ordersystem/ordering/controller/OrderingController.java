@@ -21,7 +21,7 @@ public class OrderingController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createOrder(@RequestBody List<OrderingCreateDto> orderCreateDtos) {
-        OrderingResponseDto result = this.orderingService.createOrder(orderCreateDtos);
+        OrderingResponseDto result = this.orderingService.createOrderCuncurrent(orderCreateDtos);
         return new ResponseEntity<>(CommonCorrectResponse.builder()
                 .response(result)
                 .status_code(HttpStatus.CREATED.value())

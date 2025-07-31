@@ -41,7 +41,7 @@ public class MemberController {
         // at 토큰 생성
         String accessToken = jwtTokenProvider.createAtToken(member);
         // rt토큰 생성
-        String refreshToken = jwtTokenProvider.createhRtToken(member);
+        String refreshToken = jwtTokenProvider.createRtToken(member);
 
         MemberLoginResDto memberLoginResDto = MemberLoginResDto.builder()
                 .accessToken(accessToken)

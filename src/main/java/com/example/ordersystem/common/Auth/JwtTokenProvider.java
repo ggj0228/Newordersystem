@@ -46,7 +46,7 @@ public class JwtTokenProvider {
     @PostConstruct
     public void init() {
         secretKeyAtToken = new SecretKeySpec(java.util.Base64.getDecoder().decode(secretKeyAt), SignatureAlgorithm.HS512.getJcaName());
-        secretKeyRtToken = new SecretKeySpec(java.util.Base64.getDecoder().decode(secretKeyAt), SignatureAlgorithm.HS512.getJcaName());
+        secretKeyRtToken = new SecretKeySpec(java.util.Base64.getDecoder().decode(secretKeyRt), SignatureAlgorithm.HS512.getJcaName());
 
     }
 
@@ -65,7 +65,7 @@ public class JwtTokenProvider {
                 .compact();
         return accessToken;
     }
-    public String createhRtToken(Member member) {
+    public String createRtToken(Member member) {
         // 유효기간이 긴 rt 토큰 생성
         String email = member.getEmail();
         Role role = member.getRole();
