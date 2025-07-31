@@ -7,6 +7,7 @@ import com.example.ordersystem.ordering.service.OrderingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class OrderingController {
     }
 
     @GetMapping("/list")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> findAll() {
         return new ResponseEntity<>(CommonCorrectResponse.builder()
                 .response(this.orderingService.findAll())
@@ -36,4 +38,14 @@ public class OrderingController {
                 .status_message("주문 리스트")
                 .build(), HttpStatus.OK);
     }
+
+    @GetMapping("/myorders")
+    public ResponseEntity<?> myOrders() {
+        return new ResponseEntity<>(CommonCorrectResponse.builder()
+                .response(this.orderingService.findAllByMember())
+                .status_code(HttpStatus.OK.value())
+                .status_message("내 주문 목록 조회")
+                .build(), HttpStatus.OK);
+    }
+
 }

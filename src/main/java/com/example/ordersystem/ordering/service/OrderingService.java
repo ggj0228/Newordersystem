@@ -72,10 +72,22 @@ public class OrderingService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
         List<OrderListDto> orderListDtos = new ArrayList<>();
-        List<Ordering> orderings = orderingRepository.findAllByMember(member);
+        List<Ordering> orderings = orderingRepository.findAll();
         for (Ordering ordering : orderings) {
             orderListDtos.add(OrderListDto.fromEntity(ordering));
         }
         return orderListDtos;
+    }
+
+
+    public List<OrderingMySelfListDto> findAllByMember() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+        List<OrderingMySelfListDto> orderLists = new ArrayList<>();
+        List<Ordering> orderings = this.orderingRepository.findAllByMember(member);
+        for(Ordering ordering : orderings) {
+            orderLists.add(OrderingMySelfListDto.fromEntity(ordering));
+        }
+        return orderLists;
     }
 }
