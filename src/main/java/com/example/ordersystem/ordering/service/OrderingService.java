@@ -29,7 +29,7 @@ public class OrderingService {
     private final ProductRepository productRepository;
     private final OrderDetailRepository orderDetailRepository;
 
-    public OrderingResultDto createOrder(List<OrderingCreateDto> dto) {
+    public OrderingResponseDto createOrder(List<OrderingCreateDto> dto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
         Ordering ordering = Ordering.builder().member(member).build();
@@ -38,33 +38,34 @@ public class OrderingService {
         for (OrderingCreateDto orderCreateDto : dto) {
             Product product = productRepository.findById(dto.get(idx).getProductId()).orElseThrow(() -> new EntityNotFoundException("상품이 없습니다."));
             if (product.getStockQuantity() < dto.get(idx).getProductCount()) {
-                orderingFailedDtos.add(new OrderingFailedDto(product, "현재 재고에서" + (dto.get(idx).getProductCount() - product.getStockQuantity()) + "개의 상품이 없습니다."));
-                continue;
-
+                throw new IllegalArgumentException("현재 재고에서" + (dto.get(idx).getProductCount() - product.getStockQuantity()) + "개의 상품이 없습니다.");
             }
-                int productAfterStockQuantity = product.getStockQuantity() - dto.get(idx).getProductCount();
-                product.updateStockQuantity(productAfterStockQuantity);
-                productRepository.save(product);
+            int productAfterStockQuantity = product.getStockQuantity() - dto.get(idx).getProductCount();
+            product.updateStockQuantity(productAfterStockQuantity);
+            productRepository.save(product);
 
-                OrderDetail orderDetail = OrderDetail.builder()
-                        .product(product)
-                        .ordering(ordering)
-                        .productCount(dto.get(idx).getProductCount())
-                        .totalPrice(product.getPrice() * dto.get(idx).getProductCount())
-                        .build();
-                ordering.getOrderDetailList().add(orderDetail);
+            OrderDetail orderDetail = OrderDetail.builder()
+                    .product(product)
+                    .ordering(ordering)
+                    .productCount(dto.get(idx).getProductCount())
+                    .totalPrice(product.getPrice() * dto.get(idx).getProductCount())
+                    .build();
+            ordering.getOrderDetailList().add(orderDetail);
 
-                idx++;
-
+            idx++;
         }
-        if (!ordering.getOrderDetailList().isEmpty()) {
-            this.orderingRepository.save(ordering);
-            OrderingResponseDto response = OrderingResponseDto.fromEntity(ordering, OrderStatus.ORDERED);
-            return new OrderingResultDto(response, orderingFailedDtos);
-        } else {
-            // 모든 상품이 실패한 경우
-            return new OrderingResultDto(null, orderingFailedDtos);
-        }
+        this.orderingRepository.save(ordering);
+        OrderingResponseDto response = OrderingResponseDto.fromEntity(ordering, OrderStatus.ORDERED);
+        return response;
+//        }
+//        if (!ordering.getOrderDetailList().isEmpty()) {
+//            this.orderingRepository.save(ordering);
+//            OrderingResponseDto response = OrderingResponseDto.fromEntity(ordering, OrderStatus.ORDERED);
+//            return new OrderingResultDto(response, orderingFailedDtos);
+//        } else {
+//            // 모든 상품이 실패한 경우
+//            return new OrderingResultDto(null, orderingFailedDtos);
+//        }
     }
 
     public List<OrderListDto> findAll() {

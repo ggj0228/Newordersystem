@@ -2,7 +2,7 @@ package com.example.ordersystem.ordering.controller;
 
 import com.example.ordersystem.common.dto.response.CommonCorrectResponse;
 import com.example.ordersystem.ordering.dto.OrderingCreateDto;
-import com.example.ordersystem.ordering.dto.OrderingResultDto;
+import com.example.ordersystem.ordering.dto.OrderingResponseDto;
 import com.example.ordersystem.ordering.service.OrderingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ public class OrderingController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createOrder(@RequestBody List<OrderingCreateDto> orderCreateDtos) {
-        OrderingResultDto result = this.orderingService.createOrder(orderCreateDtos);
+        OrderingResponseDto result = this.orderingService.createOrder(orderCreateDtos);
         return new ResponseEntity<>(CommonCorrectResponse.builder()
                 .response(result)
                 .status_code(HttpStatus.CREATED.value())
