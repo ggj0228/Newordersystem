@@ -14,10 +14,11 @@ import com.example.ordersystem.ordering.repository.OrderingRepository;
 import com.example.ordersystem.product.domain.Product;
 import com.example.ordersystem.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +74,8 @@ public class OrderingService {
 //        }
     }
 
+    // redis에 연동
+    @Transactional(isolation = Isolation.READ_COMMITTED)// 격리레벨을 낮춤으로서, 성능향상과 lock관련 문제 원천 차단
     public OrderingResponseDto createOrderCuncurrent(List<OrderingCreateDto> dto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));

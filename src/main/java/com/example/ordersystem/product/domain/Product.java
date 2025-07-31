@@ -41,7 +41,7 @@ public class Product extends BaseTime {
     }
 
     public void updateStockQuantity(int quantity) {
-        this.stockQuantity = quantity;
+        this.stockQuantity -= quantity;
     }
 
 }
