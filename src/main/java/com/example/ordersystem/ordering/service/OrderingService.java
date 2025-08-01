@@ -5,6 +5,7 @@ import com.example.ordersystem.common.service.StockInventoryService;
 import com.example.ordersystem.common.service.StockRabbitMqService;
 import com.example.ordersystem.member.domain.Member;
 import com.example.ordersystem.member.repository.MemeberRepository;
+import com.example.ordersystem.member.service.SseAlarmService;
 import com.example.ordersystem.orderdetail.domain.OrderDetail;
 import com.example.ordersystem.orderdetail.repository.OrderDetailRepository;
 import com.example.ordersystem.ordering.domain.OrderStatus;
@@ -33,6 +34,7 @@ public class OrderingService {
     private final OrderDetailRepository orderDetailRepository;
     private final StockInventoryService stockInventoryService;
     private final StockRabbitMqService  stockRabbitMqService;
+    private final SseAlarmService sseAlarmService;
 
 
     public OrderingResponseDto createOrder(List<OrderingCreateDto> dto) {
@@ -85,6 +87,7 @@ public class OrderingService {
         for (OrderingCreateDto orderCreateDto : dto) {
             Product product = productRepository.findById(dto.get(idx).getProductId()).orElseThrow(() -> new EntityNotFoundException("상품이 없습니다."));
                 // redis에서 재고수량 확인및 재고수량 감소 처리
+
               int newQuantity =  stockInventoryService.decreaseStockQuntity(dto.get(idx).getProductId(), dto.get(idx).getProductCount());
               if(newQuantity < 0) {
                   throw new IllegalArgumentException("재고 부족");
@@ -104,6 +107,10 @@ public class OrderingService {
         }
         this.orderingRepository.save(ordering);
         OrderingResponseDto response = OrderingResponseDto.fromEntity(ordering, OrderStatus.ORDERED);
+
+        // 주문 성공시 admin 유저에게 알림 메시지 전송
+        sseAlarmService.publishMessage("admin@naver.com", email, ordering.getId());
+
         return response;
     }
 
