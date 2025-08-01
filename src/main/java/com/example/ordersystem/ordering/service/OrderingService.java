@@ -97,6 +97,7 @@ public class OrderingService {
                     .totalPrice(product.getPrice() * dto.get(idx).getProductCount())
                     .build();
             ordering.getOrderDetailList().add(orderDetail);
+//            rdb에 사후 update를 위한 메시지 발행 (비동기 처리)
             stockRabbitMqService.publish(orderCreateDto.getProductId(), orderCreateDto.getProductCount());
             idx++;
 
@@ -128,5 +129,20 @@ public class OrderingService {
 //            orderLists.add(OrderingMySelfListDto.fromEntity(ordering));
         List<OrderingMySelfListDto> orderLists = orderingRepository.findAllByMember(member).stream().map(a -> OrderingMySelfListDto.fromEntity(a)).toList();
         return orderLists;
+    }
+
+
+    public Ordering cancel (Long id) {
+        Ordering ordering = this.orderingRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("order id가 없습니다."));
+
+        // Ordering DB에 상태값만 변경
+        ordering.cancelstatus(OrderStatus.CANCLED);
+        // redis의 재고값 증가
+        for(OrderDetail detail :ordering.getOrderDetailList()) {
+            detail.getProduct().cancelOrder(detail.getProductCount());
+            this.stockInventoryService.inCreaseStockQuantity(detail.getProduct().getId(), detail.getProductCount());
+
+        }
+        return ordering;
     }
 }

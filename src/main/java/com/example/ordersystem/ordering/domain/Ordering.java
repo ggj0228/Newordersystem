@@ -35,6 +35,9 @@ public class Ordering extends BaseTime {
     @Builder.Default
     List<OrderDetail> orderDetailList = new ArrayList<>();
 
+    public  void cancelstatus(OrderStatus status) {
+        this.orderStatus = status;
+    }
 
 
 }

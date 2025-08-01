@@ -44,4 +44,7 @@ public class Product extends BaseTime {
         this.stockQuantity -= quantity;
     }
 
+    public void cancelOrder (int quantity) {
+        this.stockQuantity += quantity;
+    }
 }

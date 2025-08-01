@@ -31,7 +31,5 @@ public class OrderListDto {
                         .map(a -> OrderDetailDto.fromEntity(a))
                         .toList())
                 .build();
-
-
     }
 }
