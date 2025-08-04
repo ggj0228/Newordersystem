@@ -1,17 +1,19 @@
 package com.example.ordersystem.common.service;
 
 import com.example.ordersystem.common.dto.response.CommonErrrorResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityExistsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestController;
 
-@ControllerAdvice
+@RestController
 @Slf4j
+@Hidden    // swagger에서 제외
 public class CommonExceptionHandler {
 
     @ExceptionHandler(EntityExistsException.class)

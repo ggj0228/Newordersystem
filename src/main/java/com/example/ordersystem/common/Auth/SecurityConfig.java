@@ -42,8 +42,14 @@ public class SecurityConfig {
 
                 )
                 .authorizeHttpRequests(a -> a.requestMatchers(
-                        "/member/sign", "/member/login", "member/refresh-at",
-                        "/product/list", "product/detail/{id}"
+                        "/member/sign",
+                        "/member/login",
+                        "member/refresh-at",
+                        "/product/list",
+                        "product/detail/{id}",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
 
                 ).permitAll().anyRequest().authenticated())
                 .build();

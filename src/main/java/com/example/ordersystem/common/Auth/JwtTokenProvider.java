@@ -83,7 +83,7 @@ public class JwtTokenProvider {
 
         // rt 토큰을 redis에 저장
         redisTemplate.opsForValue().set(member.getEmail(), refreshToken);
-//        redisTemplate.opsForValue().set(member.getEmail(), refreshToken, 200, Time.Unit.DAYS); // 200일 ttl, 토큰 검증애서 걸림
+//          redisTemplate.opsForValue().set(member.getEmail(), refreshToken, 200, Time.Unit.DAYS); // 200일 ttl, 토큰 검증애서 걸림
         return refreshToken;
 
 
