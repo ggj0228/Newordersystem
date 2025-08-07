@@ -25,7 +25,7 @@ public class ProductController {
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createProduct(@ModelAttribute ProductCreateDto dto,
-                                           @RequestParam(name ="productImage") MultipartFile productImage) {
+                                           @RequestParam(name ="productImage", required = false) MultipartFile productImage) {
         Long id = this.productService.createProduct(dto, productImage);
         return new ResponseEntity<>(CommonCorrectResponse.builder()
                 .response(id)

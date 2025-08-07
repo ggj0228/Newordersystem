@@ -46,32 +46,38 @@ public class ProductService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
         Product product = productRepository.save(dto.toEntity(member));
-        String fileName = "member-"+product.getId()+ "-productfileImage"+productImage.getOriginalFilename();
-        // 저장 객체 구성
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(fileName)
-                .contentType(productImage.getContentType()) // imag, jpeg, video/mp4
-                .build();
+        if (productImage != null && !productImage.isEmpty()) {
+            String fileName = "member-" + product.getId() + "-productfileImage" + productImage.getOriginalFilename();
 
-        // 이미지를 업로드(byte형태로)
-        // checked에러 나오는데 service 계층에서 롤백되야하니 try catch해야함
-        try {
-            s3Client.putObject(putObjectRequest, RequestBody.fromBytes((productImage.getBytes())));
-        } catch (Exception e) {
-            // checked를 unchecked로 바꿔서  전체 내용이 rollback되도록 예외처리
-            e.getMessage();
-            e.printStackTrace();
-            throw new IllegalArgumentException("이미지 업로드 실패");
-        }
+            try {
+                s3Client.putObject(
+                        PutObjectRequest.builder()
+                                .bucket(bucket)
+                                .key(fileName)
+                                .contentType(productImage.getContentType())
+                                .build(),
+                        RequestBody.fromBytes(productImage.getBytes())
+                );
 
-        // 이미지 삭제 시
+                String imgUrl = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
+                product.updateImageUrl(imgUrl);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new IllegalArgumentException("이미지 업로드 실패");
+            }
+
+            // 이미지 삭제 시
 //        s3Client.deleteObject(a -> a.bucket(버킷명).key(파일명))
 
-        // 이미지 url 추출
-        String imgUrl = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
-        product.updateImageUrl(imgUrl);
+            // 이미지 url 추출
+            String imgUrl = null;
+            if (productImage != null && !productImage.isEmpty()) {
+                imgUrl = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
+            }
 
+            product.updateImageUrl(imgUrl);
+        }
         // 상품등록시 redis에 재고세팅
         stockInventoryService.makeStockQuntity(product.getId(),product.getStockQuantity());
         return product.getId();
